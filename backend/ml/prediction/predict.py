@@ -88,13 +88,22 @@ class DiseasePredictor:
         return None
 
 if __name__ == '__main__':
-    # Simple test
+    import sys
+    import json
+    
     predictor = DiseasePredictor()
-    sample_input = {
-        "itching": True,
-        "skin_rash": True,
-        "nodal_skin_eruptions": True
-    }
-    print("Test Input:", sample_input)
-    res = predictor.predict(sample_input)
-    print("Prediction Result:", res)
+    if len(sys.argv) > 1:
+        try:
+            input_data = json.loads(sys.argv[1])
+            res = predictor.predict(input_data)
+            print(json.dumps(res))
+        except Exception as e:
+            print(json.dumps({"error": str(e)}))
+    else:
+        sample_input = {
+            "itching": True,
+            "skin_rash": True,
+            "nodal_skin_eruptions": True
+        }
+        res = predictor.predict(sample_input)
+        print(json.dumps(res, indent=2))
