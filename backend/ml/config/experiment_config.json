@@ -1,0 +1,17 @@
+{
+    "random_seed": 42,
+    "test_size": 0.2,
+    "cv_folds": 5,
+    "models": [
+        "Decision Tree",
+        "Random Forest",
+        "Naive Bayes",
+        "KNN",
+        "SVM",
+        "Gradient Boosting"
+    ],
+    "dataset_paths": {
+        "train": "Training.csv",
+        "test": "Testing.csv"
+    }
+}

@@ -1,0 +1,138 @@
+{
+    "experiment_a_original": [
+        {
+            "model": "Decision Tree",
+            "accuracy": 1.0,
+            "macro_precision": 1.0,
+            "macro_recall": 1.0,
+            "macro_f1": 1.0,
+            "weighted_precision": 1.0,
+            "weighted_recall": 1.0,
+            "weighted_f1": 1.0
+        },
+        {
+            "model": "Random Forest",
+            "accuracy": 1.0,
+            "macro_precision": 1.0,
+            "macro_recall": 1.0,
+            "macro_f1": 1.0,
+            "weighted_precision": 1.0,
+            "weighted_recall": 1.0,
+            "weighted_f1": 1.0
+        },
+        {
+            "model": "Naive Bayes",
+            "accuracy": 1.0,
+            "macro_precision": 1.0,
+            "macro_recall": 1.0,
+            "macro_f1": 1.0,
+            "weighted_precision": 1.0,
+            "weighted_recall": 1.0,
+            "weighted_f1": 1.0
+        },
+        {
+            "model": "KNN",
+            "accuracy": 1.0,
+            "macro_precision": 1.0,
+            "macro_recall": 1.0,
+            "macro_f1": 1.0,
+            "weighted_precision": 1.0,
+            "weighted_recall": 1.0,
+            "weighted_f1": 1.0
+        },
+        {
+            "model": "SVM",
+            "accuracy": 1.0,
+            "macro_precision": 1.0,
+            "macro_recall": 1.0,
+            "macro_f1": 1.0,
+            "weighted_precision": 1.0,
+            "weighted_recall": 1.0,
+            "weighted_f1": 1.0
+        },
+        {
+            "model": "Gradient Boosting",
+            "accuracy": 1.0,
+            "macro_precision": 1.0,
+            "macro_recall": 1.0,
+            "macro_f1": 1.0,
+            "weighted_precision": 1.0,
+            "weighted_recall": 1.0,
+            "weighted_f1": 1.0
+        }
+    ],
+    "experiment_b_cleaned": [
+        {
+            "model": "Decision Tree",
+            "accuracy": 0.7049180327868853,
+            "macro_precision": 0.6046747967479674,
+            "macro_recall": 0.6341463414634146,
+            "macro_f1": 0.5907859078590786,
+            "weighted_precision": 0.7124316939890709,
+            "weighted_recall": 0.7049180327868853,
+            "weighted_f1": 0.6812386156648452,
+            "cv_macro_f1_mean": 0.5487314616278032,
+            "cv_macro_f1_std": 0.057126900698295485
+        },
+        {
+            "model": "Random Forest",
+            "accuracy": 1.0,
+            "macro_precision": 1.0,
+            "macro_recall": 1.0,
+            "macro_f1": 1.0,
+            "weighted_precision": 1.0,
+            "weighted_recall": 1.0,
+            "weighted_f1": 1.0,
+            "cv_macro_f1_mean": 1.0,
+            "cv_macro_f1_std": 0.0
+        },
+        {
+            "model": "Naive Bayes",
+            "accuracy": 0.9836065573770492,
+            "macro_precision": 0.991869918699187,
+            "macro_recall": 0.9878048780487805,
+            "macro_f1": 0.9869918699186992,
+            "weighted_precision": 0.989071038251366,
+            "weighted_recall": 0.9836065573770492,
+            "weighted_f1": 0.9825136612021859,
+            "cv_macro_f1_mean": 1.0,
+            "cv_macro_f1_std": 0.0
+        },
+        {
+            "model": "KNN",
+            "accuracy": 1.0,
+            "macro_precision": 1.0,
+            "macro_recall": 1.0,
+            "macro_f1": 1.0,
+            "weighted_precision": 1.0,
+            "weighted_recall": 1.0,
+            "weighted_f1": 1.0,
+            "cv_macro_f1_mean": 1.0,
+            "cv_macro_f1_std": 0.0
+        },
+        {
+            "model": "SVM",
+            "accuracy": 1.0,
+            "macro_precision": 1.0,
+            "macro_recall": 1.0,
+            "macro_f1": 1.0,
+            "weighted_precision": 1.0,
+            "weighted_recall": 1.0,
+            "weighted_f1": 1.0,
+            "cv_macro_f1_mean": 1.0,
+            "cv_macro_f1_std": 0.0
+        },
+        {
+            "model": "Gradient Boosting",
+            "accuracy": 0.8360655737704918,
+            "macro_precision": 0.8021680216802167,
+            "macro_recall": 0.8048780487804879,
+            "macro_f1": 0.784478935698448,
+            "weighted_precision": 0.8488160291438979,
+            "weighted_recall": 0.8360655737704918,
+            "weighted_f1": 0.8195727769498262,
+            "cv_macro_f1_mean": 0.8324803401632671,
+            "cv_macro_f1_std": 0.08822020251729742
+        }
+    ]
+}

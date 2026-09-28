@@ -1,0 +1,530 @@
+[
+    {
+        "feature": "itching",
+        "importance": 0.021057912305987494
+    },
+    {
+        "feature": "muscle_pain",
+        "importance": 0.020126629910746582
+    },
+    {
+        "feature": "fatigue",
+        "importance": 0.019954764871765094
+    },
+    {
+        "feature": "vomiting",
+        "importance": 0.01906103838879368
+    },
+    {
+        "feature": "joint_pain",
+        "importance": 0.018298936128287775
+    },
+    {
+        "feature": "yellowing_of_eyes",
+        "importance": 0.0180393175391221
+    },
+    {
+        "feature": "chills",
+        "importance": 0.016750894090791012
+    },
+    {
+        "feature": "high_fever",
+        "importance": 0.0164375395316902
+    },
+    {
+        "feature": "mild_fever",
+        "importance": 0.01622533924602184
+    },
+    {
+        "feature": "nausea",
+        "importance": 0.015694556995813073
+    },
+    {
+        "feature": "loss_of_appetite",
+        "importance": 0.015420211521023965
+    },
+    {
+        "feature": "dark_urine",
+        "importance": 0.014871621611635043
+    },
+    {
+        "feature": "abdominal_pain",
+        "importance": 0.014749730427456245
+    },
+    {
+        "feature": "diarrhoea",
+        "importance": 0.014713121147017026
+    },
+    {
+        "feature": "weight_loss",
+        "importance": 0.014381173550020996
+    },
+    {
+        "feature": "pain_behind_the_eyes",
+        "importance": 0.01342504580742876
+    },
+    {
+        "feature": "sweating",
+        "importance": 0.013302404296506419
+    },
+    {
+        "feature": "headache",
+        "importance": 0.01303801704990598
+    },
+    {
+        "feature": "yellowish_skin",
+        "importance": 0.012635030691325653
+    },
+    {
+        "feature": "chest_pain",
+        "importance": 0.012528178195865755
+    },
+    {
+        "feature": "cough",
+        "importance": 0.012393055588869164
+    },
+    {
+        "feature": "family_history",
+        "importance": 0.012282794562989403
+    },
+    {
+        "feature": "malaise",
+        "importance": 0.011372230004397825
+    },
+    {
+        "feature": "skin_rash",
+        "importance": 0.011360780508955615
+    },
+    {
+        "feature": "loss_of_balance",
+        "importance": 0.011221875709802159
+    },
+    {
+        "feature": "stomach_bleeding",
+        "importance": 0.01122033076783731
+    },
+    {
+        "feature": "fluid_overload.1",
+        "importance": 0.011092144124517516
+    },
+    {
+        "feature": "back_pain",
+        "importance": 0.010987262495219642
+    },
+    {
+        "feature": "indigestion",
+        "importance": 0.01092007272341387
+    },
+    {
+        "feature": "lethargy",
+        "importance": 0.010890566344901846
+    },
+    {
+        "feature": "depression",
+        "importance": 0.010844853461200323
+    },
+    {
+        "feature": "inflammatory_nails",
+        "importance": 0.010433270191334583
+    },
+    {
+        "feature": "red_spots_over_body",
+        "importance": 0.010389249680967447
+    },
+    {
+        "feature": "dizziness",
+        "importance": 0.010286054615044494
+    },
+    {
+        "feature": "excessive_hunger",
+        "importance": 0.010193869874720398
+    },
+    {
+        "feature": "rusty_sputum",
+        "importance": 0.009886210765734964
+    },
+    {
+        "feature": "coma",
+        "importance": 0.009751716546657394
+    },
+    {
+        "feature": "stomach_pain",
+        "importance": 0.008994004285670532
+    },
+    {
+        "feature": "palpitations",
+        "importance": 0.008868695879272403
+    },
+    {
+        "feature": "belly_pain",
+        "importance": 0.008795767942509847
+    },
+    {
+        "feature": "bloody_stool",
+        "importance": 0.008671328672208638
+    },
+    {
+        "feature": "receiving_unsterile_injections",
+        "importance": 0.008347647345109503
+    },
+    {
+        "feature": "pus_filled_pimples",
+        "importance": 0.008336753031878943
+    },
+    {
+        "feature": "neck_pain",
+        "importance": 0.00833198747026111
+    },
+    {
+        "feature": "breathlessness",
+        "importance": 0.008068918174927305
+    },
+    {
+        "feature": "acidity",
+        "importance": 0.008007504617070926
+    },
+    {
+        "feature": "fast_heart_rate",
+        "importance": 0.007982026913830502
+    },
+    {
+        "feature": "spinning_movements",
+        "importance": 0.007792616482821887
+    },
+    {
+        "feature": "increased_appetite",
+        "importance": 0.007774206652120245
+    },
+    {
+        "feature": "blurred_and_distorted_vision",
+        "importance": 0.0077649805465621925
+    },
+    {
+        "feature": "visual_disturbances",
+        "importance": 0.0075970664399071285
+    },
+    {
+        "feature": "mood_swings",
+        "importance": 0.007388305843866889
+    },
+    {
+        "feature": "irritability",
+        "importance": 0.007314310006912228
+    },
+    {
+        "feature": "muscle_weakness",
+        "importance": 0.007282235446573263
+    },
+    {
+        "feature": "burning_micturition",
+        "importance": 0.0071023629360913035
+    },
+    {
+        "feature": "swelled_lymph_nodes",
+        "importance": 0.007051552386732378
+    },
+    {
+        "feature": "mucoid_sputum",
+        "importance": 0.007041384836225441
+    },
+    {
+        "feature": "swelling_joints",
+        "importance": 0.007020225348302298
+    },
+    {
+        "feature": "hip_joint_pain",
+        "importance": 0.006840713910867032
+    },
+    {
+        "feature": "extra_marital_contacts",
+        "importance": 0.006719502759943954
+    },
+    {
+        "feature": "toxic_look_(typhos)",
+        "importance": 0.006636599943219637
+    },
+    {
+        "feature": "movement_stiffness",
+        "importance": 0.0066258558825526784
+    },
+    {
+        "feature": "polyuria",
+        "importance": 0.006598102998019936
+    },
+    {
+        "feature": "receiving_blood_transfusion",
+        "importance": 0.006475426268104723
+    },
+    {
+        "feature": "internal_itching",
+        "importance": 0.006416874450040153
+    },
+    {
+        "feature": "ulcers_on_tongue",
+        "importance": 0.006333162499175364
+    },
+    {
+        "feature": "knee_pain",
+        "importance": 0.006305509910439449
+    },
+    {
+        "feature": "obesity",
+        "importance": 0.006257717094937049
+    },
+    {
+        "feature": "yellow_crust_ooze",
+        "importance": 0.006179107315039658
+    },
+    {
+        "feature": "slurred_speech",
+        "importance": 0.006155769746530007
+    },
+    {
+        "feature": "bladder_discomfort",
+        "importance": 0.005937831580581334
+    },
+    {
+        "feature": "unsteadiness",
+        "importance": 0.005852078087386354
+    },
+    {
+        "feature": "weakness_of_one_body_side",
+        "importance": 0.005850500103427517
+    },
+    {
+        "feature": "yellow_urine",
+        "importance": 0.005738827796539397
+    },
+    {
+        "feature": "stiff_neck",
+        "importance": 0.005711184323480623
+    },
+    {
+        "feature": "bruising",
+        "importance": 0.005682973685700448
+    },
+    {
+        "feature": "spotting_ urination",
+        "importance": 0.005613175935646306
+    },
+    {
+        "feature": "phlegm",
+        "importance": 0.005591011573497323
+    },
+    {
+        "feature": "painful_walking",
+        "importance": 0.005508539576162328
+    },
+    {
+        "feature": "red_sore_around_nose",
+        "importance": 0.005506454463242874
+    },
+    {
+        "feature": "anxiety",
+        "importance": 0.005325667794224359
+    },
+    {
+        "feature": "blood_in_sputum",
+        "importance": 0.0053194081991616415
+    },
+    {
+        "feature": "swollen_extremeties",
+        "importance": 0.005246536115945654
+    },
+    {
+        "feature": "continuous_sneezing",
+        "importance": 0.00524401137489507
+    },
+    {
+        "feature": "skin_peeling",
+        "importance": 0.0052121222034652494
+    },
+    {
+        "feature": "altered_sensorium",
+        "importance": 0.0051531854109717464
+    },
+    {
+        "feature": "history_of_alcohol_consumption",
+        "importance": 0.005149979553044625
+    },
+    {
+        "feature": "lack_of_concentration",
+        "importance": 0.005128723448197333
+    },
+    {
+        "feature": "sunken_eyes",
+        "importance": 0.004953341163826672
+    },
+    {
+        "feature": "dehydration",
+        "importance": 0.004943086473507748
+    },
+    {
+        "feature": "constipation",
+        "importance": 0.004910163235811584
+    },
+    {
+        "feature": "blister",
+        "importance": 0.004844323725826449
+    },
+    {
+        "feature": "passage_of_gases",
+        "importance": 0.004821071047680019
+    },
+    {
+        "feature": "cramps",
+        "importance": 0.004792561818577666
+    },
+    {
+        "feature": "nodal_skin_eruptions",
+        "importance": 0.004761408668996252
+    },
+    {
+        "feature": "redness_of_eyes",
+        "importance": 0.004737907553237669
+    },
+    {
+        "feature": "abnormal_menstruation",
+        "importance": 0.004709782123474943
+    },
+    {
+        "feature": "dischromic _patches",
+        "importance": 0.0046792721056392005
+    },
+    {
+        "feature": "acute_liver_failure",
+        "importance": 0.004530160497371471
+    },
+    {
+        "feature": "restlessness",
+        "importance": 0.004516689663907896
+    },
+    {
+        "feature": "congestion",
+        "importance": 0.0044499311811134
+    },
+    {
+        "feature": "loss_of_smell",
+        "importance": 0.0042945469137284035
+    },
+    {
+        "feature": "throat_irritation",
+        "importance": 0.004238137788146403
+    },
+    {
+        "feature": "enlarged_thyroid",
+        "importance": 0.004189892107970767
+    },
+    {
+        "feature": "swollen_legs",
+        "importance": 0.004117980589973895
+    },
+    {
+        "feature": "watering_from_eyes",
+        "importance": 0.004075053663509851
+    },
+    {
+        "feature": "shivering",
+        "importance": 0.0038086107097097745
+    },
+    {
+        "feature": "irritation_in_anus",
+        "importance": 0.0037104536246659247
+    },
+    {
+        "feature": "swelling_of_stomach",
+        "importance": 0.003654102642205218
+    },
+    {
+        "feature": "weakness_in_limbs",
+        "importance": 0.0036199290509661775
+    },
+    {
+        "feature": "foul_smell_of urine",
+        "importance": 0.0035573344626430503
+    },
+    {
+        "feature": "pain_during_bowel_movements",
+        "importance": 0.0035221396261271233
+    },
+    {
+        "feature": "irregular_sugar_level",
+        "importance": 0.0035045218143028665
+    },
+    {
+        "feature": "continuous_feel_of_urine",
+        "importance": 0.003402880674874635
+    },
+    {
+        "feature": "swollen_blood_vessels",
+        "importance": 0.003380876559948235
+    },
+    {
+        "feature": "muscle_wasting",
+        "importance": 0.0033088773793626502
+    },
+    {
+        "feature": "small_dents_in_nails",
+        "importance": 0.0031042655755854514
+    },
+    {
+        "feature": "patches_in_throat",
+        "importance": 0.0028286831257907123
+    },
+    {
+        "feature": "brittle_nails",
+        "importance": 0.0028215907949885916
+    },
+    {
+        "feature": "pain_in_anal_region",
+        "importance": 0.002716497442783723
+    },
+    {
+        "feature": "silver_like_dusting",
+        "importance": 0.0026396198856882542
+    },
+    {
+        "feature": "weight_gain",
+        "importance": 0.0024118904147870167
+    },
+    {
+        "feature": "drying_and_tingling_lips",
+        "importance": 0.002355766640839172
+    },
+    {
+        "feature": "sinus_pressure",
+        "importance": 0.0023089220897234875
+    },
+    {
+        "feature": "blackheads",
+        "importance": 0.0022879996000902485
+    },
+    {
+        "feature": "prominent_veins_on_calf",
+        "importance": 0.002070957085008822
+    },
+    {
+        "feature": "scurring",
+        "importance": 0.002014233625345274
+    },
+    {
+        "feature": "runny_nose",
+        "importance": 0.0018773512905952822
+    },
+    {
+        "feature": "distention_of_abdomen",
+        "importance": 0.001869250289831487
+    },
+    {
+        "feature": "cold_hands_and_feets",
+        "importance": 0.0014152059944143875
+    },
+    {
+        "feature": "puffy_face_and_eyes",
+        "importance": 0.0011544927403587184
+    },
+    {
+        "feature": "fluid_overload",
+        "importance": 0.0
+    }
+]
