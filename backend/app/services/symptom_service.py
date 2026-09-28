@@ -1,4 +1,7 @@
-export const SYMPTOM_DICTIONARY: Record<string, string[]> = {
+import re
+from typing import Dict, List, Tuple
+
+SYMPTOM_DICTIONARY = {
   "itching": ["itch", "itchy", "itching", "scratch", "scratchy"],
   "skin_rash": ["rash", "rashes", "skin rash", "red spots", "breakout"],
   "nodal_skin_eruptions": ["nodal skin eruptions", "skin eruptions", "bumps on skin", "nodules"],
@@ -131,10 +134,9 @@ export const SYMPTOM_DICTIONARY: Record<string, string[]> = {
   "blister": ["blister", "blisters"],
   "red_sore_around_nose": ["red sore around nose", "sore near nose"],
   "yellow_crust_ooze": ["yellow crust ooze", "yellow crust"]
-};
+}
 
-// Emergency phrases that should trigger the safety warning
-export const SAFETY_PHRASES = [
+SAFETY_PHRASES = [
   "severe difficulty breathing",
   "can't breathe at all",
   "severe chest pain",
@@ -147,4 +149,77 @@ export const SAFETY_PHRASES = [
   "severe bleeding",
   "bleeding heavily",
   "coughing up a lot of blood"
-];
+]
+
+NEGATION_PATTERN = re.compile(r'\b(no|not|don\'t|do not|doesn\'t|does not|without|never|haven\'t|has no|clear of)\b', re.IGNORECASE)
+UNCERTAINTY_PATTERN = re.compile(r'\b(maybe|might|could be|possibly|not sure if|think i have|feels like i might)\b', re.IGNORECASE)
+SEVERITY_WORDS = ["mild", "slight", "moderate", "severe", "very severe", "extreme", "unbearable", "bad"]
+DURATION_PATTERN = re.compile(r'\b(for\s+(\d+|one|two|three|four|five|six|seven|eight|nine|ten|a few|a couple of|several|a)\s+(day|days|week|weeks|month|months|year|years)|since\s+(yesterday|monday|tuesday|wednesday|thursday|friday|saturday|sunday))\b', re.IGNORECASE)
+
+def extract_symptoms(message: str) -> Dict[str, List[str]]:
+    result = {"present": [], "absent": [], "unknown": []}
+    lower_message = message.lower()
+    
+    parts = re.split(r',|\band\b|\bbut\b|\bhowever\b|\.', lower_message)
+    
+    for part in parts:
+        part = part.strip()
+        if not part: continue
+        
+        is_negated = bool(NEGATION_PATTERN.search(part))
+        is_uncertain = bool(UNCERTAINTY_PATTERN.search(part))
+        
+        matched_symptoms = set()
+        for symptom, synonyms in SYMPTOM_DICTIONARY.items():
+            for synonym in synonyms:
+                if re.search(rf'\b{re.escape(synonym)}\b', part, re.IGNORECASE):
+                    matched_symptoms.add(symptom)
+                    
+        for sym in matched_symptoms:
+            if is_negated:
+                if sym not in result['absent']: result['absent'].append(sym)
+            elif is_uncertain:
+                if sym not in result['unknown']: result['unknown'].append(sym)
+            else:
+                if sym not in result['present']: result['present'].append(sym)
+                
+    return result
+
+def extract_duration(message: str) -> str:
+    match = DURATION_PATTERN.search(message)
+    if match:
+        return match.group(0).strip()
+    if re.search(r'\b(just started|recently)\b', message, re.IGNORECASE):
+        return "recent"
+    return None
+
+def extract_severity(message: str) -> str:
+    lower_msg = message.lower()
+    for severity in SEVERITY_WORDS:
+        if re.search(rf'\b{re.escape(severity)}\b', lower_msg):
+            return severity
+    return None
+
+def check_safety_flags(message: str) -> bool:
+    lower_msg = message.lower()
+    return any(phrase in lower_msg for phrase in SAFETY_PHRASES)
+
+def detect_unknown_symptoms(message: str, extracted: Dict[str, List[str]]) -> bool:
+    lower_msg = message.lower()
+    patterns = [
+        r'my (.*) hurts',
+        r'pain in my (.*)',
+        r'i feel (.*)',
+        r'i am experiencing (.*)',
+        r'i have an unusual (.*)'
+    ]
+    has_extracted = bool(extracted['present'] or extracted['absent'] or extracted['unknown'])
+    
+    for pat in patterns:
+        if re.search(pat, lower_msg, re.IGNORECASE):
+            if not has_extracted: return True
+            
+    if "unusual" in lower_msg or "sensation" in lower_msg:
+        if not has_extracted: return True
+        
+    return False

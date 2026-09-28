@@ -1,21 +1,66 @@
-import { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Send, Mic, Activity, Info, ChevronRight, AlertTriangle, Edit2, RotateCcw } from 'lucide-react';
+import { Send, Mic, Activity, Info, AlertTriangle, RotateCcw } from 'lucide-react';
 import MedicalDisclaimer from '../components/MedicalDisclaimer';
-import { createInitialState, processUserMessage, ConversationState } from '../services/chat/engine';
-import { analyzeSymptoms } from '../services/api/predictService';
+import { sendChatMessage, getAssessment, predictDisease } from '../services/api';
 
-const SUGGESTED_SYMPTOMS = ['Fever', 'Headache', 'Cough', 'Body pain', 'Fatigue'];
+class ErrorBoundary extends React.Component<{children: React.ReactNode}, {hasError: boolean}> {
+  constructor(props: {children: React.ReactNode}) {
+    super(props);
+    this.state = { hasError: false };
+  }
+  static getDerivedStateFromError(_error: any) {
+    return { hasError: true };
+  }
+  componentDidCatch(error: any, errorInfo: any) {
+    console.error("Chat UI crashed:", error, errorInfo);
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="flex-1 flex items-center justify-center bg-slate-50">
+          <div className="text-center p-6 bg-white rounded-xl shadow-sm border border-slate-200">
+            <AlertTriangle className="h-10 w-10 text-red-500 mx-auto mb-3" />
+            <h2 className="text-lg font-semibold text-slate-800 mb-2">Something went wrong</h2>
+            <p className="text-sm text-slate-600 mb-4">An unexpected error occurred while rendering the chat.</p>
+            <button onClick={() => window.location.reload()} className="btn-primary py-2 px-4 text-sm">
+              Try Again
+            </button>
+          </div>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
+const generateSessionId = () => Math.random().toString(36).substring(2, 15);
 
 export default function Chat() {
   const navigate = useNavigate();
+  const [sessionId, setSessionId] = useState(generateSessionId());
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
-  const [chatState, setChatState] = useState<ConversationState>(createInitialState());
-  const [isEditing, setIsEditing] = useState(false);
-  const [editedSymptoms, setEditedSymptoms] = useState<Record<string, 'PRESENT' | 'ABSENT' | 'UNKNOWN'>>({});
+  const [chatState, setChatState] = useState<any>(null);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const loadAssessment = async (id: string, isInitialLoad = true) => {
+    try {
+      const data = await getAssessment(id);
+      setChatState(data);
+    } catch (e: any) {
+      if (isInitialLoad) {
+        // Initial load on mount might 404 if session doesn't exist yet, which is fine
+        return;
+      }
+      throw e;
+    }
+  };
+
+  useEffect(() => {
+    loadAssessment(sessionId, true);
+  }, [sessionId]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -23,44 +68,48 @@ export default function Chat() {
 
   useEffect(() => {
     scrollToBottom();
-  }, [chatState.messages, isTyping]);
+  }, [chatState?.messages, isTyping]);
 
-  const handleSend = (text: string) => {
+  const handleSend = async (text: string) => {
     if (!text.trim()) return;
     
     setInput('');
     setIsTyping(true);
     
-    // Process message with our local NLP engine
-    setTimeout(() => {
-      const newState = processUserMessage(text, chatState);
-      setChatState(newState);
+    // Optimistic user message update
+    setChatState((prev: any) => ({
+      ...prev,
+      messages: [...(prev?.messages || []), { id: Date.now().toString(), sender: 'user', text }]
+    }));
+    
+    try {
+      await sendChatMessage({ session_id: sessionId, message: text });
+      await loadAssessment(sessionId, false);
+    } catch (err: any) {
+      console.error(err);
+      setChatState((prev: any) => ({
+        ...prev,
+        messages: [...(prev?.messages || []), {
+          id: Date.now().toString(),
+          sender: 'system',
+          text: "Sorry, I couldn't process that message. Please try again."
+        }]
+      }));
+    } finally {
       setIsTyping(false);
-    }, 600); // Small delay to simulate typing
+    }
   };
 
   const handleAnalyze = async () => {
     setIsTyping(true);
     try {
-      // Build boolean symptom vector for the predictor
-      const featureDict: Record<string, boolean> = {};
-      Object.entries(chatState.symptoms).forEach(([sym, status]) => {
-        if (status === 'PRESENT') {
-          featureDict[sym] = true;
-        } else {
-          featureDict[sym] = false;
-        }
-      });
-      
-      const result = await analyzeSymptoms(featureDict);
-      
-      // Navigate to Result page with the output
+      const result = await predictDisease(sessionId);
       navigate('/result', { state: { result, chatState } });
     } catch (err: any) {
       console.error(err);
-      setChatState(prev => ({
+      setChatState((prev: any) => ({
         ...prev,
-        messages: [...prev.messages, {
+        messages: [...(prev?.messages || []), {
           id: Date.now().toString(),
           sender: 'system',
           text: `Prediction Error: ${err.message}`
@@ -71,31 +120,21 @@ export default function Chat() {
     }
   };
 
-  const handleReset = () => {
+  const handleReset = async () => {
     if (window.confirm("Are you sure you want to start a new assessment?")) {
-      setChatState(createInitialState());
+      const newId = generateSessionId();
+      setSessionId(newId);
+      setChatState(null);
     }
   };
 
-  const handleEditToggle = () => {
-    if (isEditing) {
-      setChatState(prev => ({ ...prev, symptoms: editedSymptoms }));
-    } else {
-      setEditedSymptoms(chatState.symptoms);
-    }
-    setIsEditing(!isEditing);
-  };
-
-  const updateSymptomStatus = (sym: string, status: 'PRESENT' | 'ABSENT' | 'UNKNOWN') => {
-    setEditedSymptoms(prev => ({ ...prev, [sym]: status }));
-  };
-
-  const presentSymptoms = Object.entries(chatState.symptoms).filter(([_, s]) => s === 'PRESENT');
-  const absentSymptoms = Object.entries(chatState.symptoms).filter(([_, s]) => s === 'ABSENT');
+  const presentSymptoms = chatState?.symptoms ? Object.entries(chatState.symptoms).filter(([_, s]) => s === 'PRESENT') : [];
+  const absentSymptoms = chatState?.symptoms ? Object.entries(chatState.symptoms).filter(([_, s]) => s === 'ABSENT') : [];
 
   return (
+    <ErrorBoundary>
     <div className="flex-1 flex overflow-hidden bg-slate-50">
-      {/* Left Panel - Hidden on mobile */}
+      {/* Left Panel */}
       <div className="hidden lg:flex w-80 flex-col border-r border-slate-200 bg-white">
         <div className="p-6 border-b border-slate-100 flex justify-between items-center">
           <h2 className="text-lg font-semibold text-slate-800 flex items-center gap-2">
@@ -113,45 +152,36 @@ export default function Chat() {
             <div className="bg-slate-50 border border-slate-200 rounded-xl p-4">
               <div className="flex justify-between items-center mb-3">
                 <h3 className="text-sm font-semibold text-slate-700 uppercase tracking-wider">Symptoms Identified</h3>
-                {Object.keys(chatState.symptoms).length > 0 && (
-                  <button onClick={handleEditToggle} className="text-primary-600 hover:text-primary-800 flex items-center gap-1 text-xs font-medium">
-                    <Edit2 className="h-3 w-3" /> {isEditing ? 'Save' : 'Edit'}
-                  </button>
-                )}
               </div>
               
-              {Object.keys(chatState.symptoms).length === 0 ? (
+              {!chatState?.symptoms || Object.keys(chatState.symptoms).length === 0 ? (
                 <p className="text-sm text-slate-500 italic">No symptoms identified yet.</p>
               ) : (
                 <div className="space-y-4">
                   {/* PRESENT */}
-                  {(presentSymptoms.length > 0 || isEditing) && (
+                  {presentSymptoms.length > 0 && (
                     <div>
                       <p className="text-xs font-medium text-emerald-700 mb-1">Present:</p>
                       <ul className="space-y-1">
-                        {Object.entries(isEditing ? editedSymptoms : chatState.symptoms)
-                          .filter(([_, s]) => s === 'PRESENT')
-                          .map(([sym]) => (
-                            <li key={sym} className="text-sm text-slate-700 flex items-center gap-1.5">
-                              <span className="text-emerald-500">✓</span> {sym.replace(/_/g, ' ')}
-                            </li>
-                          ))}
+                        {presentSymptoms.map(([sym]) => (
+                          <li key={sym} className="text-sm text-slate-700 flex items-center gap-1.5 capitalize">
+                            <span className="text-emerald-500">✓</span> {sym.replace(/_/g, ' ')}
+                          </li>
+                        ))}
                       </ul>
                     </div>
                   )}
                   
                   {/* ABSENT */}
-                  {(absentSymptoms.length > 0 || isEditing) && (
+                  {absentSymptoms.length > 0 && (
                     <div>
                       <p className="text-xs font-medium text-red-700 mb-1">Explicitly Absent:</p>
                       <ul className="space-y-1">
-                        {Object.entries(isEditing ? editedSymptoms : chatState.symptoms)
-                          .filter(([_, s]) => s === 'ABSENT')
-                          .map(([sym]) => (
-                            <li key={sym} className="text-sm text-slate-700 flex items-center gap-1.5">
-                              <span className="text-red-500">✕</span> {sym.replace(/_/g, ' ')}
-                            </li>
-                          ))}
+                        {absentSymptoms.map(([sym]) => (
+                          <li key={sym} className="text-sm text-slate-700 flex items-center gap-1.5 capitalize">
+                            <span className="text-red-500">✕</span> {sym.replace(/_/g, ' ')}
+                          </li>
+                        ))}
                       </ul>
                     </div>
                   )}
@@ -169,32 +199,15 @@ export default function Chat() {
                   )}
                 </div>
               )}
-              
-              {/* EDIT MODE CONTROLS */}
-              {isEditing && (
-                <div className="mt-4 pt-4 border-t border-slate-200 space-y-2">
-                  <p className="text-xs text-slate-500 mb-2">Change status:</p>
-                  {Object.keys(editedSymptoms).map(sym => (
-                    <div key={sym} className="flex flex-col text-xs bg-white p-2 rounded border border-slate-200">
-                      <span className="font-medium capitalize mb-1">{sym.replace(/_/g, ' ')}</span>
-                      <div className="flex gap-2">
-                        <label className="flex items-center gap-1 cursor-pointer"><input type="radio" checked={editedSymptoms[sym] === 'PRESENT'} onChange={() => updateSymptomStatus(sym, 'PRESENT')} /> Yes</label>
-                        <label className="flex items-center gap-1 cursor-pointer"><input type="radio" checked={editedSymptoms[sym] === 'ABSENT'} onChange={() => updateSymptomStatus(sym, 'ABSENT')} /> No</label>
-                        <label className="flex items-center gap-1 cursor-pointer"><input type="radio" checked={editedSymptoms[sym] === 'UNKNOWN'} onChange={() => updateSymptomStatus(sym, 'UNKNOWN')} /> ?</label>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
             </div>
 
             <div className="bg-blue-50 rounded-xl p-4 border border-blue-100">
               <div className="flex items-center gap-2 mb-2 text-blue-800 font-medium text-sm">
                 <Info className="h-4 w-4" />
-                Phase 3 Engine Active
+                Phase 4 FastAPI backend Active
               </div>
               <p className="text-xs text-blue-700">
-                Natural Language processing and local extraction engine is active.
+                Connected to FastAPI backend for NLP and ML prediction.
               </p>
             </div>
             
@@ -209,12 +222,12 @@ export default function Chat() {
         <div className="h-16 border-b border-slate-200 bg-white flex items-center justify-between px-4 sm:px-6 shadow-sm z-10">
           <div className="flex items-center gap-3">
             <h1 className="font-semibold text-slate-800">AI HealthAssist</h1>
-            {chatState.assessment_status === 'emergency' ? (
+            {chatState?.status === 'emergency' ? (
               <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-red-50 border border-red-100 text-red-700 text-xs font-medium">
                 <AlertTriangle className="h-3 w-3" />
                 Safety Alert
               </div>
-            ) : chatState.assessment_status === 'ready' ? (
+            ) : chatState?.status === 'ready' ? (
               <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-blue-50 border border-blue-100 text-blue-700 text-xs font-medium">
                 Ready for Analysis
               </div>
@@ -232,7 +245,7 @@ export default function Chat() {
             >
               <RotateCcw className="h-4 w-4" />
             </button>
-            {(chatState.assessment_status === 'ready' || presentSymptoms.length > 0) && (
+            {(chatState?.status === 'ready' || presentSymptoms.length > 0) && (
               <button 
                 onClick={handleAnalyze}
                 disabled={isTyping}
@@ -250,7 +263,11 @@ export default function Chat() {
              <MedicalDisclaimer />
           </div>
           
-          {chatState.messages.map((msg) => (
+          {!chatState && !isTyping && (
+             <div className="text-center text-slate-500 my-4 text-sm">Session initialized. Type a symptom to begin.</div>
+          )}
+
+          {chatState?.messages.map((msg: any) => (
             <div
               key={msg.id}
               className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}
@@ -261,7 +278,7 @@ export default function Chat() {
                     ? 'bg-primary-600 text-white rounded-tr-sm'
                     : msg.sender === 'system'
                       ? 'bg-red-50 border border-red-200 text-red-800 w-full rounded'
-                      : chatState.assessment_status === 'emergency' && msg === chatState.messages[chatState.messages.length - 1]
+                      : chatState?.status === 'emergency' && msg === chatState.messages[chatState.messages.length - 1]
                         ? 'bg-red-50 border-2 border-red-200 text-red-900 rounded-tl-sm'
                         : 'bg-white border border-slate-200 text-slate-800 rounded-tl-sm'
                 }`}
@@ -287,9 +304,9 @@ export default function Chat() {
         <div className="bg-white border-t border-slate-200 p-4 pb-safe">
           <div className="max-w-4xl mx-auto">
             {/* Suggested Chips */}
-            {chatState.messages.length === 1 && (
+            {(!chatState || chatState.messages.length <= 1) && (
               <div className="flex flex-wrap gap-2 mb-3">
-                {SUGGESTED_SYMPTOMS.map((symptom) => (
+                {['Fever', 'Headache', 'Cough', 'Body pain'].map((symptom) => (
                   <button
                     key={symptom}
                     onClick={() => handleSend(`I've been experiencing ${symptom.toLowerCase()}`)}
@@ -310,13 +327,13 @@ export default function Chat() {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleSend(input)}
-                placeholder={chatState.assessment_status === 'emergency' ? "Assessment halted due to safety flags..." : "Type your symptoms here..."}
-                disabled={chatState.assessment_status === 'emergency'}
+                placeholder={chatState?.status === 'emergency' ? "Assessment halted due to safety flags..." : "Type your symptoms here..."}
+                disabled={chatState?.status === 'emergency'}
                 className="w-full pl-12 pr-14 py-4 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all disabled:opacity-50"
               />
               <button
                 onClick={() => handleSend(input)}
-                disabled={!input.trim() || chatState.assessment_status === 'emergency'}
+                disabled={!input.trim() || chatState?.status === 'emergency'}
                 className="absolute right-2 p-2.5 bg-primary-600 text-white rounded-lg disabled:opacity-50 disabled:bg-slate-300 transition-colors hover:bg-primary-700"
               >
                 <Send className="h-4 w-4" />
@@ -326,5 +343,6 @@ export default function Chat() {
         </div>
       </div>
     </div>
+    </ErrorBoundary>
   );
 }
