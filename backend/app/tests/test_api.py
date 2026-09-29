@@ -6,6 +6,7 @@ import uuid
 from backend.app.main import app
 from backend.app.db.database import get_db, Base
 from backend.app.db.models import GuidanceContent
+from backend.app.db.seed import seed_guidance
 
 # Test database
 SQLALCHEMY_DATABASE_URL = "sqlite:///./test_healthassist.db"
@@ -31,9 +32,17 @@ client = TestClient(app)
 def setup_module(module):
     # Setup guidance data for tests
     db = TestingSessionLocal()
-    if not db.query(GuidanceContent).filter_by(condition_name="Malaria").first():
-        db.add(GuidanceContent(condition_name="Malaria", description="Test description"))
-        db.commit()
+    seed_guidance(db)
+    db.close()
+
+def test_seeding_idempotence():
+    db = TestingSessionLocal()
+    count1 = db.query(GuidanceContent).count()
+    # Try seeding again
+    seed_guidance(db)
+    count2 = db.query(GuidanceContent).count()
+    assert count1 == 4
+    assert count1 == count2
     db.close()
 
 def teardown_module(module):

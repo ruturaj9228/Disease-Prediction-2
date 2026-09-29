@@ -2,8 +2,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from .api.routes import health, chat, symptoms, assessment, predict, history, analytics
 from .services.prediction_service import load_predictor
-from .db.database import engine, Base
-
+from .db.database import engine, Base, SessionLocal
+from .db.seed import seed_guidance
 import logging
 
 app = FastAPI(
@@ -37,6 +37,16 @@ def startup_event():
         
     logging.info("Initializing database...")
     Base.metadata.create_all(bind=engine)
+    
+    # Auto-seed guidance content if empty
+    db = SessionLocal()
+    try:
+        seed_guidance(db)
+        logging.info("Database seeded successfully.")
+    except Exception as e:
+        logging.error(f"Failed to seed database: {e}")
+    finally:
+        db.close()
 
 app.include_router(health.router, prefix="/api", tags=["Health"])
 app.include_router(chat.router, prefix="/api", tags=["Chat"])
