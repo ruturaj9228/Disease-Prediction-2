@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Search, Filter, Calendar, ChevronRight, Clock, Trash2, AlertCircle } from 'lucide-react';
-import { getHistory, deleteHistory } from '../services/api';
+import { getHistory, deleteHistory, getHistoryDetail } from '../services/api';
 
 export default function History() {
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [historyData, setHistoryData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -34,6 +35,39 @@ export default function History() {
       } catch (err: any) {
         alert("Failed to delete: " + err.message);
       }
+    }
+  };
+
+  const handleViewDetails = async (id: string) => {
+    try {
+      setLoading(true);
+      const detail = await getHistoryDetail(id);
+      
+      const chatState = {
+        session_id: detail.session_id,
+        messages: detail.messages,
+        symptoms: detail.symptoms.reduce((acc: any, curr: any) => {
+          acc[curr.name] = curr.status;
+          return acc;
+        }, {}),
+        status: detail.status,
+        duration: detail.duration,
+        severity: detail.severity,
+        safety_flag: detail.safety_flag,
+      };
+
+      const result = {
+        prediction: detail.prediction.predicted_condition,
+        model_score: detail.prediction.model_score,
+        top_predictions: detail.prediction.top_predictions,
+        symptoms_used: detail.prediction.symptoms_used,
+        assessment_id: detail.assessment_id
+      };
+
+      navigate('/result', { state: { result, chatState } });
+    } catch (err: any) {
+      alert("Failed to load details: " + err.message);
+      setLoading(false);
     }
   };
 
@@ -137,10 +171,10 @@ export default function History() {
                       <button onClick={() => handleDelete(item.assessment_id)} className="text-red-500 hover:text-red-700 mr-4">
                         <Trash2 className="h-4 w-4 inline" />
                       </button>
-                      <Link to="/chat" className="inline-flex items-center text-primary-600 hover:text-primary-800">
-                        New
+                      <button onClick={() => handleViewDetails(item.assessment_id)} className="inline-flex items-center text-primary-600 hover:text-primary-800">
+                        View
                         <ChevronRight className="ml-1 h-4 w-4" />
-                      </Link>
+                      </button>
                     </td>
                   </tr>
                 ))}
