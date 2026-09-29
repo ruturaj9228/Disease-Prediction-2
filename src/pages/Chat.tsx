@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Send, Mic, Activity, Info, AlertTriangle, RotateCcw } from 'lucide-react';
 import MedicalDisclaimer from '../components/MedicalDisclaimer';
 import { sendChatMessage, getAssessment, predictDisease } from '../services/api';
+import { getSuggestions, replaceLastMatchedPhrase, type Suggestion } from '../utils/suggestions';
 
 class ErrorBoundary extends React.Component<{children: React.ReactNode}, {hasError: boolean}> {
   constructor(props: {children: React.ReactNode}) {
@@ -42,6 +43,8 @@ export default function Chat() {
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [chatState, setChatState] = useState<any>(null);
+  const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
+  const [selectedSuggestionIndex, setSelectedSuggestionIndex] = useState(-1);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -325,11 +328,48 @@ export default function Chat() {
               <input
                 type="text"
                 value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleSend(input)}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setInput(val);
+                  if (val.trim()) {
+                    const present = chatState?.symptoms ? Object.entries(chatState.symptoms).filter(([_, s]) => s === 'PRESENT').map(([k]) => k) : [];
+                    setSuggestions(getSuggestions(val, present));
+                  } else {
+                    setSuggestions([]);
+                  }
+                  setSelectedSuggestionIndex(-1);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    setSelectedSuggestionIndex(prev => prev < suggestions.length - 1 ? prev + 1 : prev);
+                  } else if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    setSelectedSuggestionIndex(prev => prev > 0 ? prev - 1 : -1);
+                  } else if (e.key === 'Enter') {
+                    e.preventDefault();
+                    if (selectedSuggestionIndex >= 0 && selectedSuggestionIndex < suggestions.length) {
+                      const sug = suggestions[selectedSuggestionIndex];
+                      const newInput = replaceLastMatchedPhrase(input, sug);
+                      setInput(newInput);
+                      setSuggestions([]);
+                      setSelectedSuggestionIndex(-1);
+                      setTimeout(() => handleSend(newInput), 0);
+                    } else {
+                      handleSend(input);
+                      setSuggestions([]);
+                    }
+                  } else if (e.key === 'Escape') {
+                    setSuggestions([]);
+                  }
+                }}
                 placeholder={chatState?.status === 'emergency' ? "Assessment halted due to safety flags..." : "Type your symptoms here..."}
                 disabled={chatState?.status === 'emergency'}
                 className="w-full pl-12 pr-14 py-4 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all disabled:opacity-50"
+                role="combobox"
+                aria-expanded={suggestions.length > 0}
+                aria-controls="suggestions-list"
+                aria-activedescendant={selectedSuggestionIndex >= 0 ? `suggestion-${selectedSuggestionIndex}` : undefined}
               />
               <button
                 onClick={() => handleSend(input)}
@@ -338,6 +378,46 @@ export default function Chat() {
               >
                 <Send className="h-4 w-4" />
               </button>
+
+              {/* Suggestions UI */}
+              {suggestions.length > 0 && (
+                <div 
+                  id="suggestions-list"
+                  role="listbox"
+                  className="absolute z-20 w-full left-0 bg-white border border-slate-200 rounded-xl shadow-lg overflow-hidden"
+                  style={{ bottom: '100%', marginBottom: '0.5rem' }}
+                >
+                  <div className="px-3 py-2 text-xs font-semibold text-slate-500 bg-slate-50 border-b border-slate-100 uppercase tracking-wider">
+                    Suggestions
+                  </div>
+                  <ul className="max-h-60 overflow-y-auto">
+                    {suggestions.map((sug, index) => (
+                      <li
+                        key={sug.id}
+                        id={`suggestion-${index}`}
+                        role="option"
+                        aria-selected={index === selectedSuggestionIndex}
+                        className={`px-4 py-3 cursor-pointer text-sm border-b border-slate-50 last:border-0 transition-colors flex items-center justify-between ${
+                          index === selectedSuggestionIndex ? 'bg-primary-50 text-primary-900' : 'hover:bg-slate-50 text-slate-700'
+                        }`}
+                        onClick={() => {
+                          const newInput = replaceLastMatchedPhrase(input, sug);
+                          setInput(newInput);
+                          setSuggestions([]);
+                          setSelectedSuggestionIndex(-1);
+                          setTimeout(() => handleSend(newInput), 0);
+                        }}
+                        onMouseEnter={() => setSelectedSuggestionIndex(index)}
+                      >
+                        <span className="font-medium">{sug.displayName}</span>
+                        <span className="text-xs text-slate-400 capitalize bg-slate-100 px-2 py-0.5 rounded-full">
+                          {sug.matchType}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </div>
           </div>
         </div>
