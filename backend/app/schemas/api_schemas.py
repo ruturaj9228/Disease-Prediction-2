@@ -49,6 +49,7 @@ class PredictionResponse(BaseModel):
     model_score: Optional[float]
     top_predictions: List[TopPrediction]
     symptoms_used: List[str]
+    assessment_id: Optional[str] = None
 
 class SafetyResponse(BaseModel):
     safety_flag: bool

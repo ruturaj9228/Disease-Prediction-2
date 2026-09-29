@@ -1,40 +1,44 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Search, Filter, Calendar, ChevronRight, Clock } from 'lucide-react';
-
-const DEMO_HISTORY = [
-  {
-    id: '1',
-    date: '2023-10-24T10:30:00Z',
-    symptoms: ['Fever', 'Headache', 'Body pain'],
-    condition: 'Viral Infection',
-    confidence: 78,
-    status: 'Completed',
-  },
-  {
-    id: '2',
-    date: '2023-09-15T14:20:00Z',
-    symptoms: ['Sore throat', 'Cough', 'Runny nose'],
-    condition: 'Common Cold',
-    confidence: 85,
-    status: 'Completed',
-  },
-  {
-    id: '3',
-    date: '2023-08-02T09:15:00Z',
-    symptoms: ['Stomach ache', 'Nausea'],
-    condition: 'Gastroenteritis',
-    confidence: 62,
-    status: 'Reviewed',
-  }
-];
+import { Search, Filter, Calendar, ChevronRight, Clock, Trash2, AlertCircle } from 'lucide-react';
+import { getHistory, deleteHistory } from '../services/api';
 
 export default function History() {
   const [searchTerm, setSearchTerm] = useState('');
+  const [historyData, setHistoryData] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const filteredHistory = DEMO_HISTORY.filter(item => 
-    item.condition.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    item.symptoms.some(s => s.toLowerCase().includes(searchTerm.toLowerCase()))
+  const fetchHistory = async () => {
+    try {
+      setLoading(true);
+      const data = await getHistory();
+      setHistoryData(data);
+      setError(null);
+    } catch (err: any) {
+      setError(err.message || "Failed to load history");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchHistory();
+  }, []);
+
+  const handleDelete = async (id: string) => {
+    if (window.confirm("Are you sure you want to delete this assessment?")) {
+      try {
+        await deleteHistory(id);
+        fetchHistory();
+      } catch (err: any) {
+        alert("Failed to delete: " + err.message);
+      }
+    }
+  };
+
+  const filteredHistory = historyData.filter(item => 
+    (item.prediction && item.prediction.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
   return (
@@ -50,7 +54,7 @@ export default function History() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
             <input 
               type="text" 
-              placeholder="Search symptoms or conditions..." 
+              placeholder="Search conditions..." 
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-9 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 w-full md:w-64"
@@ -62,18 +66,28 @@ export default function History() {
         </div>
       </div>
 
-      <div className="bg-blue-50 border border-blue-100 text-blue-800 px-4 py-3 rounded-lg mb-6 text-sm">
-        <span className="font-semibold">Note:</span> This is a demonstration view. Actual history will be populated from the database in a later phase.
-      </div>
+      {error && (
+        <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg mb-6 flex items-center gap-2">
+          <AlertCircle className="h-4 w-4" />
+          {error}
+        </div>
+      )}
 
-      {filteredHistory.length > 0 ? (
+      {loading ? (
+        <div className="flex justify-center p-12">
+          <div className="animate-pulse flex flex-col items-center">
+            <div className="h-10 w-10 bg-slate-200 rounded-full mb-4"></div>
+            <div className="h-4 w-32 bg-slate-200 rounded"></div>
+          </div>
+        </div>
+      ) : filteredHistory.length > 0 ? (
         <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="bg-slate-50 border-b border-slate-200 text-sm text-slate-500 uppercase tracking-wider">
                   <th className="px-6 py-4 font-medium">Date</th>
-                  <th className="px-6 py-4 font-medium">Symptoms Reported</th>
+                  <th className="px-6 py-4 font-medium">Symptoms Count</th>
                   <th className="px-6 py-4 font-medium">Possible Condition</th>
                   <th className="px-6 py-4 font-medium">Confidence</th>
                   <th className="px-6 py-4 font-medium">Status</th>
@@ -82,7 +96,7 @@ export default function History() {
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {filteredHistory.map((item) => (
-                  <tr key={item.id} className="hover:bg-slate-50/50 transition-colors">
+                  <tr key={item.assessment_id} className="hover:bg-slate-50/50 transition-colors">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center text-slate-600 text-sm">
                         <Calendar className="mr-2 h-4 w-4 text-slate-400" />
@@ -90,43 +104,41 @@ export default function History() {
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="flex flex-wrap gap-1">
-                        {item.symptoms.slice(0, 2).map((sym, idx) => (
-                          <span key={idx} className="inline-block px-2 py-0.5 bg-slate-100 text-slate-600 rounded text-xs border border-slate-200">
-                            {sym}
-                          </span>
-                        ))}
-                        {item.symptoms.length > 2 && (
-                          <span className="inline-block px-2 py-0.5 bg-slate-50 text-slate-500 rounded text-xs border border-slate-200">
-                            +{item.symptoms.length - 2} more
-                          </span>
-                        )}
-                      </div>
+                      <span className="text-sm text-slate-600">{item.symptoms_count} symptoms</span>
                     </td>
                     <td className="px-6 py-4">
-                      <span className="font-medium text-slate-800">{item.condition}</span>
+                      <span className="font-medium text-slate-800 capitalize">
+                        {item.prediction ? item.prediction.replace(/_/g, ' ') : 'N/A'}
+                      </span>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="flex items-center gap-2">
-                        <div className="w-16 h-2 bg-slate-100 rounded-full overflow-hidden">
-                          <div 
-                            className="h-full bg-primary-500" 
-                            style={{ width: `${item.confidence}%` }}
-                          ></div>
+                      {item.model_score ? (
+                        <div className="flex items-center gap-2">
+                          <div className="w-16 h-2 bg-slate-100 rounded-full overflow-hidden">
+                            <div 
+                              className="h-full bg-primary-500" 
+                              style={{ width: `${Math.round(item.model_score * 100)}%` }}
+                            ></div>
+                          </div>
+                          <span className="text-sm text-slate-600 font-medium">{Math.round(item.model_score * 100)}%</span>
                         </div>
-                        <span className="text-sm text-slate-600 font-medium">{item.confidence}%</span>
-                      </div>
+                      ) : (
+                        <span className="text-sm text-slate-400">N/A</span>
+                      )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        item.status === 'Completed' ? 'bg-emerald-100 text-emerald-800' : 'bg-blue-100 text-blue-800'
+                        item.status === 'completed' ? 'bg-emerald-100 text-emerald-800' : 'bg-blue-100 text-blue-800'
                       }`}>
                         {item.status}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <Link to="/result" className="inline-flex items-center text-primary-600 hover:text-primary-800">
-                        View Details
+                      <button onClick={() => handleDelete(item.assessment_id)} className="text-red-500 hover:text-red-700 mr-4">
+                        <Trash2 className="h-4 w-4 inline" />
+                      </button>
+                      <Link to="/chat" className="inline-flex items-center text-primary-600 hover:text-primary-800">
+                        New
                         <ChevronRight className="ml-1 h-4 w-4" />
                       </Link>
                     </td>

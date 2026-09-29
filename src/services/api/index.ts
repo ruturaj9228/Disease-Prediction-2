@@ -44,3 +44,38 @@ export const getHealthStatus = async () => {
   const res = await fetch(`${API_BASE}/health`);
   return res.json();
 };
+
+export const getHistory = async () => {
+  const res = await fetch(`${API_BASE}/history`);
+  if (!res.ok) throw new Error("Failed to fetch history");
+  return res.json();
+};
+
+export const getHistoryDetail = async (assessmentId: string) => {
+  const res = await fetch(`${API_BASE}/history/${assessmentId}`);
+  if (!res.ok) throw new Error("Failed to fetch assessment detail");
+  return res.json();
+};
+
+export const deleteHistory = async (assessmentId: string) => {
+  const res = await fetch(`${API_BASE}/history/${assessmentId}`, { method: 'DELETE' });
+  if (!res.ok) throw new Error("Failed to delete assessment");
+  return res.json();
+};
+
+export const getGuidance = async (assessmentId: string) => {
+  const res = await fetch(`${API_BASE}/assessment/${assessmentId}/guidance`);
+  if (!res.ok) {
+    if (res.status === 404) return { available: false, message: "Supportive information is not currently available for this condition." };
+    throw new Error("Failed to fetch guidance");
+  }
+  return res.json();
+};
+
+export const getAnalyticsModels = async () => {
+  // Let's assume we can fetch analytics from backend, or if not implemented yet we'll add it later.
+  // Actually, we'll implement it shortly.
+  const res = await fetch(`${API_BASE}/analytics/models`);
+  if (!res.ok) throw new Error("Failed to fetch analytics");
+  return res.json();
+};

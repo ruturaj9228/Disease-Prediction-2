@@ -1,7 +1,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from .api.routes import health, chat, symptoms, assessment, predict
+from .api.routes import health, chat, symptoms, assessment, predict, history, analytics
 from .services.prediction_service import load_predictor
+from .db.database import engine, Base
 
 import logging
 
@@ -28,9 +29,14 @@ def startup_event():
         logging.info("ML Predictor loaded successfully.")
     except Exception as e:
         logging.error(f"Failed to load ML Predictor: {e}")
+        
+    logging.info("Initializing database...")
+    Base.metadata.create_all(bind=engine)
 
 app.include_router(health.router, prefix="/api", tags=["Health"])
 app.include_router(chat.router, prefix="/api", tags=["Chat"])
 app.include_router(symptoms.router, prefix="/api", tags=["Symptoms"])
 app.include_router(assessment.router, prefix="/api", tags=["Assessment"])
 app.include_router(predict.router, prefix="/api", tags=["Predict"])
+app.include_router(history.router, prefix="/api", tags=["History"])
+app.include_router(analytics.router, prefix="/api", tags=["Analytics"])
